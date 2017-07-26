@@ -1,0 +1,30 @@
+{
+  "name": "cordova-custom-printer-plugin",
+  "version": "1.0.0",
+  "description": "Cordova Plugin compatible with Custom USB Printers",
+  "cordova": {
+    "id": "cordova-custom-printer-plugin",
+    "platforms": [
+      "android"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krlozadan/cordova-custom-printer-plugin.git"
+  },
+  "keywords": [
+    "custom",
+    "printer",
+    "cordova",
+    "plugin",
+    "usb",
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "Carlos Adan Cortes De la Fuente",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/krlozadan/cordova-custom-printer-plugin/issues"
+  },
+  "homepage": "https://github.com/krlozadan/cordova-custom-printer-plugin#readme"
+}
