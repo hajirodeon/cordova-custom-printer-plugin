@@ -1,5 +1,21 @@
-var exec = require('cordova/exec');
+var CustomPrinter = function(){};
 
-exports.coolMethod = function(arg0, success, error) {
-    exec(success, error, "CustomPrinter", "coolMethod", [arg0]);
+CustomPrinter.prototype.echo =  function(message) {
+    cordova.exec(function(success){
+    	alert(success);
+    }, function(error){
+    	alert(error);
+    }, "CustomPrinter", "echo", [message]);
 };
+
+CustomPrinter.prototype.print =  function(text) {
+    cordova.exec(function(success){
+    	alert(success);
+    }, function(error){
+    	alert(error);
+    }, "CustomPrinter", "print", [text]);
+};
+
+var customPrinter = new CustomPrinter();
+
+module.exports = customPrinter;
