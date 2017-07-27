@@ -7,20 +7,20 @@
     <license>Apache 2.0</license>
     <keywords>custom,printer,cordova,plugin,usb</keywords>
 
-    <js-module name="CustomPrinter" src="www/custom-printer.js">
-        <clobbers target="cordova.plugins.CustomPrinter" />
+    <js-module name="DuplouCustomPrinter" src="www/duplou-custom-printer.js">
+        <clobbers target="cordova.plugins.DuplouCustomPrinter" />
     </js-module>
 
     <!-- Android -->
     <platform name="android">
         
         <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="CustomPrinter">
-                <param name="android-package" value="com.duplou.cordova.plugin.customprinter.CustomPrinter" />
+            <feature name="DuplouCustomPrinter">
+                <param name="android-package" value="com.duplou.cordova.plugin.customprinter.DuplouCustomPrinter" />
             </feature>
         </config-file>
 
-        <source-file src="src/android/CustomPrinter.java" target-dir="src/com/duplou/cordova/plugin/customprinter" />
+        <source-file src="src/android/DuplouCustomPrinter.java" target-dir="src/com/duplou/cordova/plugin/customprinter" />
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application/activity[@android:name='MainActivity']">
             <intent-filter>
@@ -31,7 +31,7 @@
         
         <resource-file src="src/android/res/device_filter.xml" target="res/xml/device_filter.xml" />
 
-        <lib-file src="src/android/lib/customandroidapi.jar" />
+        <lib-file src="src/android/libs/customandroidapi.jar" />
         
     </platform>
 

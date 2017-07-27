@@ -1,26 +1,58 @@
 package com.duplou.cordova.plugin.customprinter;
 
-// Imports CUSTOM Java .jar File
-import it.custom.printer.api.android.*;
-// Imports Android USB support to communicate with printing device
-import android.hardware.usb.*;
+// CUSTOM Printer Imports
+/*
+import it.custom.printer.api.android.CustomPrinter;
+import it.custom.printer.api.android.CustomAndroidAPI;
+import it.custom.printer.api.android.PrinterFont;
+import it.custom.printer.api.android.CustomException;
+*/
 
+// Cordova Imports
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
+// JSON Imports 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+// Android Imports
+import android.hardware.usb.UsbDevice;
+import android.content.Context;
 import android.util.Log;
+
 
 /**
 * This class echoes a string called from JavaScript.
 */
-public class CustomPrinter extends CordovaPlugin {
+public class DuplouCustomPrinter extends CordovaPlugin {
+
+    @Override
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        if (action.equals("echo")) {
+            String message = args.getString(0);
+            this.echo(message, callbackContext);
+            return true;
+        }
+        return false;
+    }
+
+    private void echo(String message, CallbackContext callbackContext) {
+        if (message != null && message.length() > 0) {
+            callbackContext.success(message);
+        } else {
+            callbackContext.error("Expected one non-empty string argument.");
+        }
+    }
+
+    /*
 
     // Initializes the avaliable usb printers connected to the device
     static UsbDevice[] usbDeviceList = null;
+
+    // Activity Context
+    private Context context = this.cordova.getActivity().getApplicationContext(); 
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -57,7 +89,7 @@ public class CustomPrinter extends CordovaPlugin {
             // Checks the connected usb printers
             try {
                 //Get the list of devices
-                usbDeviceList = CustomAndroidAPI.EnumUsbDevices(this);
+                usbDeviceList = CustomAndroidAPI.EnumUsbDevices(context);
 
                 if ((usbDeviceList == null) || (usbDeviceList.length == 0)){
                     //Show Error
@@ -65,7 +97,7 @@ public class CustomPrinter extends CordovaPlugin {
                     return;
                 }else{
                     // Creates new printer object
-                    CusotomPrinter printer = new CustomAndroidAPI().getPrinterDriverUSB(usbDeviceList[0],this);
+                    CustomPrinter printer = new CustomAndroidAPI().getPrinterDriverUSB(usbDeviceList[0],context);
 
                     // Creates new font object
                     PrinterFont font = new PrinterFont();
@@ -79,21 +111,26 @@ public class CustomPrinter extends CordovaPlugin {
                     font.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      //Default International Chars
 
                     // Prints the ticket
-                    printer.printText(strTextToPrint, font);
+                    printer.printText(text, font);
 
                     // Close connection with printer
                     printer.close();
 
                     // Returns result 
-                    callbackContext.success('Print finished successfully');
+                    callbackContext.success("Print finished successfully");
                 }                                   
-            }catch(CustomException | Exception e){
+            }catch(CustomException e){
                 //Show Error
-                callbackContext.error("Error...", e.getMessage());
+                callbackContext.error(e.getMessage());
+                return;
+            }catch (Exception e){
+                //Show Error
+                callbackContext.error(e.getMessage());
                 return;
             }
         } else {
             callbackContext.error("Expected one non-empty string argument.");
         }
     }
+    */
 }
