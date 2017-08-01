@@ -18,8 +18,12 @@ import org.json.JSONObject;
 import android.hardware.usb.UsbDevice;
 import android.content.Context;
 
+// Java Imports
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
-/**
+
+/*
 * This class prints tickets using CUSTOM Printer Java API
 */
 public class DuplouCustomPrinter extends CordovaPlugin {
@@ -28,79 +32,157 @@ public class DuplouCustomPrinter extends CordovaPlugin {
     static UsbDevice[] usbDeviceList = null;
     static CustomPrinter printer = null;
 
+    // Propiedades de la impresion
+    static JSONObject datosCompania = null;
+    static JSONObject datosTicket = null;
+    static JSONObject nombreZonas = null;
+    static int numeroDeImpresiones = 1;
+
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if (action.equals("print")) {
-            String text = args.getString(0);
-            this.print(text, callbackContext);
+            this.print(args, callbackContext);
             return true;
         }
         return false;
     }
 
     // Print Function
-    private void print(String text, CallbackContext callbackContext) {
-        // Checks if the string is empty
-        if (text != null && text.length() > 0) {
-            
-            // Activity Context
-            Context context = this.cordova.getActivity().getApplicationContext();
+    private void print(JSONArray args, CallbackContext callbackContext) {
 
-            // Creates custom font
-            PrinterFont font = new PrinterFont();
+        try{
+            datosCompania = args.getJSONObject(0);
+            datosTicket = args.getJSONObject(1);  
+            nombreZonas = args.getJSONObject(2);  
+            numeroDeImpresiones = args.getInt(3);
+        }catch(Exception e){
+            //Show Error
+            callbackContext.error("Error getting list of devices : " + e.getMessage());
+        }
+        
+        // Activity Context
+        Context context = this.cordova.getActivity().getApplicationContext();
+
+        // Creates custom font
+        PrinterFont fontNormal = new PrinterFont();
+        PrinterFont fontTitle1 = new PrinterFont();
+        PrinterFont fontTitle2 = new PrinterFont();
+
+        // Obtiene la fecha del momento
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yy, kk:mm");
+        String fecha = sdf.format(new Date());
+        
+        try {
+            //Get the list of devices
+            usbDeviceList = CustomAndroidAPI.EnumUsbDevices(context);                               
+        }catch (Exception e){
+            //Show Error
+            callbackContext.error("Error getting list of devices : " + e.getMessage());
+        }
+
+        // START
+        if ((usbDeviceList == null) || (usbDeviceList.length == 0)){
+            //Show Error
+            callbackContext.error("No connected printer found, please verify it is indeed connected");
+            return;
+        }else{
             
-            try {
-                //Get the list of devices
-                usbDeviceList = CustomAndroidAPI.EnumUsbDevices(context);                               
-            }catch (Exception e){
-                //Show Error
-                callbackContext.error("Error getting list of devices : " + e.getMessage());
+            // Creates new printer object
+            try{
+                printer = new CustomAndroidAPI().getPrinterDriverUSB(usbDeviceList[0], context);
+            }catch(Exception e){
+                callbackContext.error("Error creating object : " + e.getMessage());
+                return;
             }
 
-            // START
-            if ((usbDeviceList == null) || (usbDeviceList.length == 0)){
-                //Show Error
-                callbackContext.error("No connected printer found, please verify it is indeed connected");
-                return;
-            }else{
-                
-                // Creates new printer object
-                try{
-                    printer = new CustomAndroidAPI().getPrinterDriverUSB(usbDeviceList[0], context);
-                }catch(Exception e){
-                    callbackContext.error("Error creating object : " + e.getMessage());
-                    return;
-                }
+            // Customizes font
+            try{
+                // Normal
+                fontNormal.setCharHeight(PrinterFont.FONT_SIZE_X1);                   // Height x1
+                fontNormal.setCharWidth(PrinterFont.FONT_SIZE_X1);                    // Width x1
+                fontNormal.setEmphasized(false);                                      // No Bold
+                fontNormal.setItalic(false);                                          // No Italic
+                fontNormal.setUnderline(false);                                       // No Underline
+                fontNormal.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
+                fontNormal.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
 
-                // Customizes font
-                try{
-                    font.setCharHeight(PrinterFont.FONT_SIZE_X1);                   // Height x1
-                    font.setCharWidth(PrinterFont.FONT_SIZE_X1);                    // Width x1
-                    font.setEmphasized(false);                                      // No Bold
-                    font.setItalic(false);                                          // No Italic
-                    font.setUnderline(false);                                       // No Underline
-                    font.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
-                    font.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
-                }catch(Exception e){
-                    callbackContext.error("Error creating fonts" + e.getMessage());
-                    return;
-                }
+                // Title 1
+                fontTitle1.setCharHeight(PrinterFont.FONT_SIZE_X2);                   // Height x2
+                fontTitle1.setCharWidth(PrinterFont.FONT_SIZE_X2);                    // Width x2
+                fontTitle1.setEmphasized(true);                                       // Bold
+                fontTitle1.setItalic(false);                                          // No Italic
+                fontTitle1.setUnderline(false);                                       // No Underline
+                fontTitle1.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
+                fontTitle1.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
+
+                // Title 2
+                fontTitle2.setCharHeight(PrinterFont.FONT_SIZE_X3);                   // Height x3
+                fontTitle2.setCharWidth(PrinterFont.FONT_SIZE_X3);                    // Width x3
+                fontTitle2.setEmphasized(true);                                       // Bold
+                fontTitle2.setItalic(false);                                          // No Italic
+                fontTitle2.setUnderline(false);                                       // No Underline
+                fontTitle2.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
+                fontTitle2.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
+            }catch(Exception e){
+                callbackContext.error("Error creating fonts" + e.getMessage());
+                return;
+            }  
                 
+
+            // Repite el proceso de impresión las veces que el usuario lo haya colocado
+            for(int i = 1; i <= numeroDeImpresiones; i++){
                 // Prints the ticket
                 try{
-                    printer.printText(text,font);
+                    // Datos de la compañía
+                    printer.printTextLF(datosCompania.getString("company"), fontTitle1); // Nombre de la compañía
+                    
+                    printer.feed(1);
+
+                    printer.printTextLF(datosCompania.getString("address"), fontNormal); // Dirección de la compañía
+                    printer.printTextLF(datosCompania.getString("city")); // Ciudad de la compañía
+                    printer.printTextLF("Email: " + datosCompania.getString("email")); // Ciudad de la compañía
+                    printer.printTextLF("Tel: " + datosCompania.getString("tel")); // Ciudad de la compañía
+                    printer.printTextLF("Piva: " + datosCompania.getString("piva")); // Piva de la compañía
+
+                    printer.feed(1);
+
+                    printer.printTextLF("----------------------------------------"); // Línea de división
+                    printer.printTextLF("Bus: 4");
+                    printer.printTextLF("Emett: 10504");
+                    printer.printTextLF("Serie: 1");
+                    printer.printTextLF("Big. n.: 013571");
+                    printer.printTextLF("----------------------------------------"); // Línea de división
+
+                    printer.feed(1);
+
+                    printer.printTextLF("Data & Ora", fontTitle1);
+                    printer.printTextLF(fecha); // Fecha y hora
+
+                    printer.feed(1);
+
+                    printer.printTextLF(datosTicket.getString("description") + " - € " + datosTicket.getString("price"),fontNormal);
+                    printer.printTextLF(i + "/" + String.valueOf(numeroDeImpresiones));
+                    printer.printTextLF("€ " + String.valueOf(datosTicket.getInt("price") * numeroDeImpresiones), fontTitle2);
+
+                    printer.feed(1);
+
+                    printer.printTextLF("TRATTA",fontNormal);
+                    printer.printTextLF(nombreZonas.getString("start") + " = " + nombreZonas.getString("stop"),fontTitle1);
+                    printer.printTextLF("IL PRESENTE TITOLO DI VAGGGIO E' PERSONALE, NUN CEDIBLE ED HA VALIDITA' UNA SIGNOLA CORSA",fontNormal);
+
                     printer.feed(5);
+
                     printer.cut(CustomPrinter.CUT_TOTAL);
-                    // Returns result 
-                    callbackContext.success("Print finished successfully");
                 }catch(Exception e){
                     callbackContext.error("Error printing Excep: " + e.getMessage());
                     return;
                 }
-            }   
-        } else {
-            callbackContext.error("Expected one non-empty string argument.");
-            return;
-        }
+                i++;
+            }
+
+            // Returns result 
+            callbackContext.success("Print finished successfully");
+
+        }   
     }
 }
