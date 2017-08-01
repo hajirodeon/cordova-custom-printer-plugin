@@ -4,7 +4,6 @@ package com.duplou.cordova.plugin.customprinter;
 import it.custom.printer.api.android.CustomPrinter;
 import it.custom.printer.api.android.CustomAndroidAPI;
 import it.custom.printer.api.android.PrinterFont;
-import it.custom.printer.api.android.CustomException;
 
 // Cordova Imports
 import org.apache.cordova.CordovaPlugin;
@@ -27,6 +26,7 @@ public class DuplouCustomPrinter extends CordovaPlugin {
 
     // Initializes the avaliable usb printers connected to the device
     static UsbDevice[] usbDeviceList = null;
+    static CustomPrinter printer = null;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -42,51 +42,65 @@ public class DuplouCustomPrinter extends CordovaPlugin {
     private void print(String text, CallbackContext callbackContext) {
         // Checks if the string is empty
         if (text != null && text.length() > 0) {
+            
+            // Activity Context
+            Context context = this.cordova.getActivity().getApplicationContext();
+
+            // Creates custom font
+            PrinterFont font = new PrinterFont();
+            
             try {
-                // Activity Context
-                Context context = this.cordova.getActivity().getApplicationContext();
                 //Get the list of devices
-                usbDeviceList = CustomAndroidAPI.EnumUsbDevices(context);
-
-                if ((usbDeviceList == null) || (usbDeviceList.length == 0)){
-                    //Show Error
-                    callbackContext.error("No connected printer found, please verify it is indeed connected");
-                    return;
-                } else {
-                    // Creates new printer object
-                    CustomPrinter printer = new CustomAndroidAPI().getPrinterDriverUSB(usbDeviceList[0],context);
-
-                    // Creates new font object
-                    PrinterFont font = new PrinterFont();
-                    //Fill class: NORMAL
-                    font.setCharHeight(PrinterFont.FONT_SIZE_X1);                   //Height x1
-                    font.setCharWidth(PrinterFont.FONT_SIZE_X1);                    //Width x1
-                    font.setEmphasized(false);                                      //No Bold
-                    font.setItalic(false);                                          //No Italic
-                    font.setUnderline(false);                                       //No Underline
-                    font.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   //Center
-                    font.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      //Default International Chars
-
-                    // Prints the ticket
-                    printer.printText(text, font);
-
-                    // Close connection with printer
-                    printer.close();
-
-                    // Returns result 
-                    callbackContext.success("Print finished successfully");
-                }                                   
-            }catch(CustomException e){
-                //Show Error
-                callbackContext.error(e.getMessage());
-                return;
+                usbDeviceList = CustomAndroidAPI.EnumUsbDevices(context);                               
             }catch (Exception e){
                 //Show Error
-                callbackContext.error(e.getMessage());
-                return;
+                callbackContext.error("Error getting list of devices : " + e.getMessage());
             }
+
+            // START
+            if ((usbDeviceList == null) || (usbDeviceList.length == 0)){
+                //Show Error
+                callbackContext.error("No connected printer found, please verify it is indeed connected");
+                return;
+            }else{
+                
+                // Creates new printer object
+                try{
+                    printer = new CustomAndroidAPI().getPrinterDriverUSB(usbDeviceList[0], context);
+                }catch(Exception e){
+                    callbackContext.error("Error creating object : " + e.getMessage());
+                    return;
+                }
+
+                // Customizes font
+                try{
+                    font.setCharHeight(PrinterFont.FONT_SIZE_X1);                   // Height x1
+                    font.setCharWidth(PrinterFont.FONT_SIZE_X1);                    // Width x1
+                    font.setEmphasized(false);                                      // No Bold
+                    font.setItalic(false);                                          // No Italic
+                    font.setUnderline(false);                                       // No Underline
+                    font.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
+                    font.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
+                }catch(Exception e){
+                    callbackContext.error("Error creating fonts" + e.getMessage());
+                    return;
+                }
+                
+                // Prints the ticket
+                try{
+                    printer.printText(text,font);
+                    printer.feed(5);
+                    printer.cut(CustomPrinter.CUT_TOTAL);
+                    // Returns result 
+                    callbackContext.success("Print finished successfully");
+                }catch(Exception e){
+                    callbackContext.error("Error printing Excep: " + e.getMessage());
+                    return;
+                }
+            }   
         } else {
             callbackContext.error("Expected one non-empty string argument.");
+            return;
         }
     }
 }
