@@ -37,6 +37,7 @@ public class DuplouCustomPrinter extends CordovaPlugin {
     static JSONObject datosTicket = null;
     static JSONObject nombreZonas = null;
     static int numeroDeImpresiones = 1;
+    static double ticketTotal = 0;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -127,7 +128,13 @@ public class DuplouCustomPrinter extends CordovaPlugin {
                 callbackContext.error("Error creating fonts" + e.getMessage());
                 return;
             }  
-                
+            
+            try{
+                ticketTotal = datosTicket.getDouble("price") * (double) numeroDeImpresiones;
+            }catch(Exception e){
+                callbackContext.error("Error printing Excep: " + e.getMessage());
+                return;
+            }
 
             // Repite el proceso de impresión las veces que el usuario lo haya colocado
             for(int i = 1; i <= numeroDeImpresiones; i++){
@@ -162,7 +169,7 @@ public class DuplouCustomPrinter extends CordovaPlugin {
 
                     printer.printTextLF(datosTicket.getString("description") + " - € " + datosTicket.getString("price"),fontNormal);
                     printer.printTextLF(i + "/" + String.valueOf(numeroDeImpresiones));
-                    printer.printTextLF("€ " + String.valueOf(datosTicket.getInt("price") * numeroDeImpresiones), fontTitle2);
+                    printer.printTextLF("€ " + String.valueOf(ticketTotal), fontTitle2);
 
                     printer.feed(1);
 
@@ -177,7 +184,6 @@ public class DuplouCustomPrinter extends CordovaPlugin {
                     callbackContext.error("Error printing Excep: " + e.getMessage());
                     return;
                 }
-                i++;
             }
 
             // Returns result 
