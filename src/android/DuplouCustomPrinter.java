@@ -169,12 +169,12 @@ public class DuplouCustomPrinter extends CordovaPlugin {
 
                     printer.printTextLF(datosTicket.getString("description") + " - € " + datosTicket.getString("price"),fontNormal);
                     printer.printTextLF(i + "/" + String.valueOf(numeroDeImpresiones));
-                    printer.printTextLF("€ " + String.valueOf(ticketTotal), fontTitle2);
+                    printer.printTextLF("€ " + datosTicket.getString("price") + " / € " + String.valueOf(ticketTotal), fontTitle2);
 
                     printer.feed(1);
 
                     printer.printTextLF("TRATTA",fontNormal);
-                    printer.printTextLF(nombreZonas.getString("start") + " = " + nombreZonas.getString("stop"),fontTitle1);
+                    printer.printTextLF(nombreZonas.getString("start") + " --> " + nombreZonas.getString("stop"),fontTitle1);
                     printer.printTextLF("IL PRESENTE TITOLO DI VAGGGIO E' PERSONALE, NUN CEDIBLE ED HA VALIDITA' UNA SIGNOLA CORSA",fontNormal);
 
                     printer.feed(5);
