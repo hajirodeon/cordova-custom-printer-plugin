@@ -66,8 +66,7 @@ public class DuplouCustomPrinter extends CordovaPlugin {
 
         // Creates custom font
         PrinterFont fontNormal = new PrinterFont();
-        PrinterFont fontTitle1 = new PrinterFont();
-        PrinterFont fontTitle2 = new PrinterFont();
+        PrinterFont fontTitle = new PrinterFont();
 
         // Obtiene la fecha del momento
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yy, kk:mm");
@@ -107,23 +106,14 @@ public class DuplouCustomPrinter extends CordovaPlugin {
                 fontNormal.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
                 fontNormal.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
 
-                // Title 1
-                fontTitle1.setCharHeight(PrinterFont.FONT_SIZE_X2);                   // Height x2
-                fontTitle1.setCharWidth(PrinterFont.FONT_SIZE_X2);                    // Width x2
-                fontTitle1.setEmphasized(true);                                       // Bold
-                fontTitle1.setItalic(false);                                          // No Italic
-                fontTitle1.setUnderline(false);                                       // No Underline
-                fontTitle1.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
-                fontTitle1.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
-
-                // Title 2
-                fontTitle2.setCharHeight(PrinterFont.FONT_SIZE_X3);                   // Height x3
-                fontTitle2.setCharWidth(PrinterFont.FONT_SIZE_X3);                    // Width x3
-                fontTitle2.setEmphasized(true);                                       // Bold
-                fontTitle2.setItalic(false);                                          // No Italic
-                fontTitle2.setUnderline(false);                                       // No Underline
-                fontTitle2.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
-                fontTitle2.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
+                // Title 
+                fontTitle.setCharHeight(PrinterFont.FONT_SIZE_X2);                   // Height x2
+                fontTitle.setCharWidth(PrinterFont.FONT_SIZE_X2);                    // Width x2
+                fontTitle.setEmphasized(true);                                       // Bold
+                fontTitle.setItalic(false);                                          // No Italic
+                fontTitle.setUnderline(false);                                       // No Underline
+                fontTitle.setJustification(PrinterFont.FONT_JUSTIFICATION_CENTER);   // Center
+                fontTitle.setInternationalCharSet(PrinterFont.FONT_CS_DEFAULT);      // Default International Chars
             }catch(Exception e){
                 callbackContext.error("Error creating fonts" + e.getMessage());
                 return;
@@ -141,7 +131,7 @@ public class DuplouCustomPrinter extends CordovaPlugin {
                 // Prints the ticket
                 try{
                     // Datos de la compañía
-                    printer.printTextLF(datosCompania.getString("company"), fontTitle1); // Nombre de la compañía
+                    printer.printTextLF(datosCompania.getString("company"), fontTitle); // Nombre de la compañía
                     
                     printer.feed(1);
 
@@ -157,24 +147,25 @@ public class DuplouCustomPrinter extends CordovaPlugin {
                     printer.printTextLF("Bus: 4");
                     printer.printTextLF("Emett: 10504");
                     printer.printTextLF("Serie: 1");
-                    printer.printTextLF("Big. n.: 013571");
+                    printer.printTextLF("Big. N.: 013571");
                     printer.printTextLF("----------------------------------------"); // Línea de división
 
                     printer.feed(1);
 
-                    printer.printTextLF("Data & Ora", fontTitle1);
+                    printer.printTextLF("Data - Ora", fontTitle);
                     printer.printTextLF(fecha); // Fecha y hora
 
                     printer.feed(1);
 
-                    printer.printTextLF(datosTicket.getString("description") + " - € " + datosTicket.getString("price"),fontNormal);
-                    printer.printTextLF(i + "/" + String.valueOf(numeroDeImpresiones));
-                    printer.printTextLF("€ " + datosTicket.getString("price") + " / € " + String.valueOf(ticketTotal), fontTitle2);
+                    printer.printTextLF(datosTicket.getString("description"),fontNormal); // Nombre del ticket
+                    printer.printTextLF("€ " + datosTicket.getString("price"), fontTitle); // Precio de un sólo ticket
+                    printer.printTextLF(i + "/" + String.valueOf(numeroDeImpresiones)); // Número de impresión
+                    printer.printTextLF("€ " + datosTicket.getString("price") + " / € " + String.valueOf(ticketTotal)); // Precio unitario / Precio Total
 
                     printer.feed(1);
 
                     printer.printTextLF("TRATTA",fontNormal);
-                    printer.printTextLF(nombreZonas.getString("start") + " --> " + nombreZonas.getString("stop"),fontTitle1);
+                    printer.printTextLF(nombreZonas.getString("start") + " --> " + nombreZonas.getString("stop"),fontTitle);
                     printer.printTextLF("IL PRESENTE TITOLO DI VAGGGIO E' PERSONALE, NUN CEDIBLE ED HA VALIDITA' UNA SIGNOLA CORSA",fontNormal);
 
                     printer.feed(5);
