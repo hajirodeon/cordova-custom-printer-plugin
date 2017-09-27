@@ -37,7 +37,6 @@ public class DuplouCustomPrinter extends CordovaPlugin {
     static JSONObject datosTicket = null;
     static JSONObject nombreZonas = null;
     static int numeroDeImpresiones = 1;
-    static double ticketTotal = 0;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -69,7 +68,7 @@ public class DuplouCustomPrinter extends CordovaPlugin {
         PrinterFont fontTitle = new PrinterFont();
 
         // Obtiene la fecha del momento
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yy, kk:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yy - kk:mm");
         String fecha = sdf.format(new Date());
         
         try {
@@ -119,13 +118,6 @@ public class DuplouCustomPrinter extends CordovaPlugin {
                 return;
             }  
             
-            try{
-                ticketTotal = datosTicket.getDouble("price") * (double) numeroDeImpresiones;
-            }catch(Exception e){
-                callbackContext.error("Error printing Excep: " + e.getMessage());
-                return;
-            }
-
             // Repite el proceso de impresión las veces que el usuario lo haya colocado
             for(int i = 1; i <= numeroDeImpresiones; i++){
                 // Prints the ticket
@@ -159,8 +151,6 @@ public class DuplouCustomPrinter extends CordovaPlugin {
 
                     printer.printTextLF(datosTicket.getString("description"),fontNormal); // Nombre del ticket
                     printer.printTextLF("€ " + datosTicket.getString("price"), fontTitle); // Precio de un sólo ticket
-                    printer.printTextLF(i + "/" + String.valueOf(numeroDeImpresiones)); // Número de impresión
-                    printer.printTextLF("€ " + datosTicket.getString("price") + " / € " + String.valueOf(ticketTotal)); // Precio unitario / Precio Total
 
                     printer.feed(1);
 
